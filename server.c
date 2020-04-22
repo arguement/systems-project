@@ -12,7 +12,36 @@
 #define LISTEN_PORT	60000
 #define CLIENT_SIZE 30
 
+
+void sendMsg(char msg[],int sock_send,char buffer[],int* send_len){
+    
+    
+    *send_len=strlen(msg);
+    strcpy(buffer,msg);
+
+    send(sock_send,buffer,*send_len,0);
+    
+}
+void handleMsg(int client_sock,char msg[]){
+
+    char *splitter = strtok(msg,"|");
+    if (strcmp(msg,"register")==0){
+        puts("a user is trying to register...");
+        char buffer[BUF_SIZE];
+        int send_len;
+        sendMsg("request acknowledged",client_sock,buffer,&send_len);
+    }
+    
+    else if(strcmp(splitter,"register-data") == 0){
+        splitter = strtok(NULL,"|");
+        printf("%s is now registered in the system\n",splitter);
+    }
+
+
+}
+
 int main(int argc, char *argv[]){
+    int opt = 1;
     int			sock_recv;
     struct sockaddr_in	my_addr;
     int			i;
@@ -34,6 +63,13 @@ int main(int argc, char *argv[]){
         printf("socket() failed\n");
         exit(0);
     }
+
+    if( setsockopt(sock_recv, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,  
+          sizeof(opt)) < 0 )   
+    {   
+        perror("setsockopt");   
+        exit(EXIT_FAILURE);   
+    }   
         /* make local address structure */
     memset(&my_addr, 0, sizeof (my_addr));	/* zero out structure */
     my_addr.sin_family = AF_INET;	/* address family */
@@ -69,9 +105,9 @@ int main(int argc, char *argv[]){
                 FD_SET( sd , &readfds); 
         } 
     
-        puts("before select");
+        // puts("before select");
         select_ret=select(FD_SETSIZE,&readfds,NULL,NULL,NULL);
-        puts("after select");
+        // puts("after select");
 
         if ((select_ret < 0) && (errno!=EINTR))   
         {   
@@ -113,10 +149,10 @@ int main(int argc, char *argv[]){
             }   
         }
         //else its some IO operation on some other socket 
-        puts("before loop");
+        // puts("before loop");
         for (i = 0; i < CLIENT_SIZE; i++)   
         {   
-            puts("inside loop");
+            // puts("inside loop");
             sd = client_socket[i];   
                  
             if (FD_ISSET( sd , &readfds))   
@@ -144,7 +180,10 @@ int main(int argc, char *argv[]){
                     //set the string terminating NULL byte on the end  
                     //of the data read  
                     buffer[valread] = '\0';   
-                    // send(sd , buffer , strlen(buffer) , 0 );   
+                    // send(sd , buffer , strlen(buffer) , 0 );
+
+                    handleMsg(sd,buffer);  
+
                     printf("%s\n",buffer);
                 }   
             }   

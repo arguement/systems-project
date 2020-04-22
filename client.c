@@ -12,6 +12,40 @@
 #define SERVER_IP	"127.0.0.1"
 #define	SERVER_PORT	60000
 
+void sendMsg(char msg[],int sock_send,char buffer[],int* send_len){
+    
+    
+    *send_len=strlen(msg);
+    strcpy(buffer,msg);
+
+    send(sock_send,buffer,*send_len,0);
+    printf("\nafter send");
+}
+
+void handleMsg(int client_sock,char msg[]){
+
+    puts("handle msg");
+
+    if (strcmp(msg,"request acknowledged")==0){
+        puts("enter your registration info...");
+
+        char name[30];
+        printf("enter your name: ");
+        scanf("%s",name);
+
+        char strToSend[40] ;
+        strcpy(strToSend,"register-data|");
+        strcat(strToSend,name);
+
+        char buffer[BUF_SIZE];
+        int send_len;
+        sendMsg(strToSend,client_sock,buffer,&send_len);
+    }
+
+}
+
+
+
 int main(int argc, char *argv[]){
     int			sock_send;
     struct sockaddr_in	addr_send;
@@ -37,15 +71,26 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
+    // char initial[] = "regsiter";
+    // send_len=strlen(text);
+    // strcpy(buf,initial);
+
+    // send(sock_send,buf,send_len,0);
+    sendMsg("register",sock_send,buf,&send_len);
+
     while(1){
-        printf("Send? ");
-        scanf("%s",text);
+        // printf("Send? ");
+        // scanf("%s",text);
+        puts("before revieve");
+        int valread = read( sock_send, buf, BUF_SIZE);
+        buf[valread] = '\0'; 
         if (strcmp(text,"quit") == 0)
             break;
 
-        strcpy(buf,text);
-        send_len=strlen(text);
-        bytes_sent=send(sock_send,buf,send_len,0);
+        // strcpy(buf,text);
+        // send_len=strlen(text);
+        handleMsg(sock_send,buf);
+        // bytes_sent=send(sock_send,buf,send_len,0);
         }
 
     close(sock_send);
