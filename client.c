@@ -12,14 +12,14 @@
 #define SERVER_IP	"127.0.0.1"
 #define	SERVER_PORT	60000
 
-void sendMsg(char msg[],int sock_send,char buffer[],int* send_len){
+void sendMsg(char msg[],int sock_send){
     
-    
-    *send_len=strlen(msg);
+    char buffer[BUF_SIZE];
+    int send_len=strlen(msg);
     strcpy(buffer,msg);
 
-    send(sock_send,buffer,*send_len,0);
-    printf("\nafter send");
+    send(sock_send,buffer,send_len,0);
+    
 }
 
 void handleMsg(int client_sock,char msg[]){
@@ -39,7 +39,11 @@ void handleMsg(int client_sock,char msg[]){
 
         char buffer[BUF_SIZE];
         int send_len;
-        sendMsg(strToSend,client_sock,buffer,&send_len);
+        sendMsg(strToSend,client_sock);
+    }
+    else if (strcmp(msg,"you have been registered")==0){
+        puts("you are now registered to the system");
+        sendMsg("get user list",client_sock);
     }
 
 }
@@ -76,7 +80,7 @@ int main(int argc, char *argv[]){
     // strcpy(buf,initial);
 
     // send(sock_send,buf,send_len,0);
-    sendMsg("register",sock_send,buf,&send_len);
+    sendMsg("register",sock_send);
 
     while(1){
         // printf("Send? ");

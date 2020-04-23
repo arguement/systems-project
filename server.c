@@ -12,29 +12,83 @@
 #define LISTEN_PORT	60000
 #define CLIENT_SIZE 30
 
+struct State{
+    char register_users_names[30][25] ;
+    int register_users_sock_id[30];
 
-void sendMsg(char msg[],int sock_send,char buffer[],int* send_len){
+  };
+
+char* getClientList(struct State *state){
+
+    static char userList[1024] = "";
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] != 0)
+        {
+            
+            strcat(userList,state->register_users_names[i]);
+            strcat(userList,"\n");
+        }
+        
+    }
+
+    return userList;
+
+}  
+
+void updateRegisteredClients(int sock,struct State *state,char name[]){
+
+
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == 0)
+        {
+            state->register_users_sock_id[i] = sock;
+            strcpy(state->register_users_names[i],name);
+            break;
+        }
+        
+    }
     
+
+
+
+}
+
+void sendMsg(char msg[],int sock_send){
     
-    *send_len=strlen(msg);
+    char buffer[BUF_SIZE];
+    int send_len=strlen(msg);
     strcpy(buffer,msg);
 
-    send(sock_send,buffer,*send_len,0);
+    send(sock_send,buffer,send_len,0);
     
 }
-void handleMsg(int client_sock,char msg[]){
+void handleMsg(int client_sock,char msg[], struct State *state){
 
     char *splitter = strtok(msg,"|");
     if (strcmp(msg,"register")==0){
         puts("a user is trying to register...");
         char buffer[BUF_SIZE];
         int send_len;
-        sendMsg("request acknowledged",client_sock,buffer,&send_len);
+        sendMsg("request acknowledged",client_sock);
     }
     
     else if(strcmp(splitter,"register-data") == 0){
         splitter = strtok(NULL,"|");
         printf("%s is now registered in the system\n",splitter);
+        updateRegisteredClients(client_sock,state,splitter);
+        sendMsg("you have been registered",client_sock);
+    }
+    else if(strcmp(msg,"get user list")==0){
+
+        char users[1024];
+        strcpy( users,getClientList(state));
+        puts("before list");
+        puts(users);
+
     }
 
 
@@ -56,6 +110,11 @@ int main(int argc, char *argv[]){
     int sd,new_socket;
     int addrlen;
     char buffer[BUF_SIZE]; 
+    struct State state;
+
+
+    int temp[30] = {};
+    memcpy(state.register_users_sock_id, temp, sizeof(temp));
 
             
     sock_recv=socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -157,11 +216,11 @@ int main(int argc, char *argv[]){
                  
             if (FD_ISSET( sd , &readfds))   
             {   
-                puts("inside isset ");
+                // puts("inside isset ");
                 //Check if it was for closing , and also read the  
                 //incoming message  
                 int valread;
-                puts("arrives at read");
+                // puts("arrives at read");
                 if ((valread = read( sd , buffer, BUF_SIZE)) == 0)   
                 {   
                     //Somebody disconnected , get his details and print  
@@ -182,9 +241,9 @@ int main(int argc, char *argv[]){
                     buffer[valread] = '\0';   
                     // send(sd , buffer , strlen(buffer) , 0 );
 
-                    handleMsg(sd,buffer);  
+                    handleMsg(sd,buffer,&state);  
 
-                    printf("%s\n",buffer);
+                    // printf("%s\n",buffer);
                 }   
             }   
         }     
