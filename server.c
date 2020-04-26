@@ -12,26 +12,88 @@
 #define LISTEN_PORT	60000
 #define CLIENT_SIZE 30
 
+struct Store{
+  char data[30][256];
+};
 struct State{
     char register_users_names[30][25] ;
     int register_users_sock_id[30];
+    struct Store request_messages[30];
+
 
   };
 
+
+void addRegisterMessage(char name[],char mess[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (strcmp(state->register_users_names[i],name) == 0)
+        {
+            
+            for (size_t in = 0; in < 30; in++){
+                
+                if(!strcmp(state->request_messages[i].data[in],"") == 0){
+
+                    strcpy(state->request_messages[i].data[in],mess);
+
+                    break;
+                }
+            }
+            break;
+        }
+        
+    }
+
+} 
+
+void getUserName(int id,char name[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == id)
+        {
+            
+            strcpy(name,state->register_users_names[i]);
+            break;
+        }
+        
+    }
+    
+}
+
+int getUserId(char name[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (strcmp(state->register_users_names[i],name) == 0)
+        {
+            
+            return state->register_users_sock_id[i];
+        }
+        
+    }
+    return -1;
+}
+
 char* getClientList(struct State *state){
 
-    static char userList[1024] = "";
+    char userListTemp[1024] = "";
 
     for (size_t i = 0; i < 30; i++)
     {
         if (state->register_users_sock_id[i] != 0)
         {
             
-            strcat(userList,state->register_users_names[i]);
-            strcat(userList,"\n");
+            strcat(userListTemp,state->register_users_names[i]);
+            strcat(userListTemp,"\n");
         }
         
     }
+
+   
+    static char userList[1024];
+    strcpy(userList,userListTemp);
 
     return userList;
 
@@ -39,6 +101,7 @@ char* getClientList(struct State *state){
 
 void updateRegisteredClients(int sock,struct State *state,char name[]){
 
+    
 
 
     for (size_t i = 0; i < 30; i++)
@@ -86,9 +149,27 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
         char users[1024];
         strcpy( users,getClientList(state));
-        puts("before list");
-        puts(users);
+        // puts("before list");
+        // puts(users);
+        char toSend[1024]="registered users list|";
+        strcat(toSend,users);
+        // puts(toSend);
+        sendMsg(toSend,client_sock);
 
+
+    }
+    else if (strcmp(splitter,"user name") == 0){
+        printf("arrive\n");
+        splitter = strtok(NULL,"|");
+        int pid = getUserId(splitter,state);
+        char name[50],toSend[200];
+        
+        getUserName(client_sock,name,state);
+        sprintf(toSend,"connection request|%s send a request",name);
+        addRegisterMessage(splitter,"",state);
+        // sendMsg("",pid);
+        sendMsg("request message send",client_sock);
+        printf("done\n");
     }
 
 

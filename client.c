@@ -24,14 +24,14 @@ void sendMsg(char msg[],int sock_send){
 
 void handleMsg(int client_sock,char msg[]){
 
-    puts("handle msg");
-
+    // puts("handle msg");
+    char *splitter = strtok(msg,"|");
     if (strcmp(msg,"request acknowledged")==0){
         puts("enter your registration info...");
 
         char name[30];
         printf("enter your name: ");
-        scanf("%s",name);
+        fgets(name,sizeof(name),stdin);
 
         char strToSend[40] ;
         strcpy(strToSend,"register-data|");
@@ -43,7 +43,31 @@ void handleMsg(int client_sock,char msg[]){
     }
     else if (strcmp(msg,"you have been registered")==0){
         puts("you are now registered to the system");
+        // char pause[30];
+        printf("click enter to view list of all users: \n");
+        getchar();
+
         sendMsg("get user list",client_sock);
+    }
+    else if(strcmp(splitter,"registered users list") == 0){
+        splitter = strtok(NULL,"|");
+        char name[40],toSend[50] = "user name|";
+
+        printf("the list of registered users below\n");
+        puts(splitter);
+        printf("enter the name of the client you want to connect to: ");
+        
+        fgets(name,sizeof(name),stdin);
+        strcat(toSend,name);
+
+        sendMsg(toSend,client_sock);
+
+
+    }
+    else if (strcmp(splitter,"request message send") == 0){
+
+        puts("request mess send");
+
     }
 
 }
@@ -85,7 +109,7 @@ int main(int argc, char *argv[]){
     while(1){
         // printf("Send? ");
         // scanf("%s",text);
-        puts("before revieve");
+        // puts("before revieve");
         int valread = read( sock_send, buf, BUF_SIZE);
         buf[valread] = '\0'; 
         if (strcmp(text,"quit") == 0)
