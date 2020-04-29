@@ -25,9 +25,13 @@ struct State{
     int register_users_sock_id[30];
     struct Store request_messages[30];
     struct Accepted_id accepted_id[30]; // all conections that were accepted
-    struct Accepted_id connection_requests[30];
+    struct Accepted_id connection_requests[30]; // all requests sent to a client
 
   };
+
+
+void getFriendRequests(int id,char result[],struct State *state);
+void addRequestToAnotherUser(int client_sock,int pid,struct State *state);
 
 // functions to test state array
 void printMatchingIds(struct State *state);
@@ -247,17 +251,23 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         printf("pid from username: %d\n",pid);
         char name[50],toSend[200];
         
-        getUserName(client_sock,name,state);
-        sprintf(toSend,"list of friend requests|%s send a request",name);
-        addRegisterMessage(splitter,"",state); // chaange name
+        // getUserName(client_sock,name,state);
+        // sprintf(toSend,"list of friend requests|%s send a request",name);
+        // addRegisterMessage(splitter,"",state); // chaange name
+        addRequestToAnotherUser(client_sock,pid,state); // arg1 - sender of request arg2 - reciever of request
         // sendMsg("",pid);
         sendMsg("request message send",client_sock);
         printf("done\n");
     }
     else if(strcmp(msg,"see friend requests")==0){
-        char result[200];
-        updateRegisteredClients(client_sock,state,result);
-        sendMsg(result,client_sock);
+        char result[300];
+        // updateRegisteredClients(client_sock,state,result);
+        getFriendRequests(client_sock,result,state);
+        printf("results below from friend req\n");
+        puts(result);
+        char toSend[320];
+        sprintf(toSend,"list of friend requests|%s",result);
+        sendMsg(toSend,client_sock);
     }
 
     else if (strcmp(splitter,"accepted Request") == 0){
@@ -458,6 +468,34 @@ void printAllNames(struct State *state){
     {
         printf("$%s$ - %d\n",state->register_users_names[i],state->register_users_sock_id[i]);
     }
+}
+
+void addRequestToAnotherUser(int client_sock,int pid,struct State *state){
+    static int i = 0;
+    i %= 30;
+
+    
+    state->connection_requests[i].id1 = client_sock;
+    state->connection_requests[i].id2 = pid;
+
+    i+= 1;
+}
+
+void getFriendRequests(int id,char result[],struct State *state){
+    char temp[200]= "";
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        if (state->connection_requests[i].id2 == id){
+
+            char name[30];
+            getUserName( state->connection_requests[i].id1,name,state);
+            sprintf(temp,"%s\n",name);
+        }
+    }
+
+
+    strcpy(result,temp);
+    
 }
 
 
