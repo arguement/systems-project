@@ -31,12 +31,13 @@ void handleMsg(int client_sock,char msg[]){
 
         char name[30];
         printf("enter your name: ");
-        fgets(name,sizeof(name),stdin);
+        // fgets(name,sizeof(name),stdin);
+        fscanf(stdin,"%s",name);
 
         char strToSend[40] ;
         strcpy(strToSend,"register-data|");
         strcat(strToSend,name);
-
+        printf("toSend in request ack: $%s$",strToSend);
         char buffer[BUF_SIZE];
         int send_len;
         sendMsg(strToSend,client_sock);
@@ -57,16 +58,59 @@ void handleMsg(int client_sock,char msg[]){
         puts(splitter);
         printf("enter the name of the client you want to connect to: ");
         
-        fgets(name,sizeof(name),stdin);
+        // fgets(name,sizeof(name),stdin);
+        fscanf(stdin,"%s",name);
         strcat(toSend,name);
 
         sendMsg(toSend,client_sock);
 
 
     }
-    else if (strcmp(splitter,"request message send") == 0){
+    /* else if (strcmp(splitter,"request message send") == 0){
 
         puts("request mess send");
+
+    } */
+    else if (strcmp(splitter,"request message send") == 0 || strcmp(msg,"menu")==0 ){
+        
+        puts("this is the menu");
+        puts("1 ----- see friend requests");
+        puts("2 ----- see all accepted friends");
+        puts("1 ----- see friend requests");
+        puts("1 ----- see friend requests");
+
+        int response;
+        // scanf("%d",&response);
+        fscanf(stdin,"%d",&response);
+        switch (response)
+        {
+        case 1:
+            sendMsg("see friend requests",client_sock);
+            break;
+        case 2:
+            sendMsg("see all accepted friends",client_sock);
+            break;
+        default:
+            break;
+        }
+    }
+    else if (strcmp(splitter,"list of friend requests") == 0){
+        splitter = strtok(NULL,"|");
+        puts("friend request below");
+        printf("%s\n",splitter);
+
+        puts("accept a friend: ");
+        char name[40],toSend[50];
+        // fgets(name,sizeof(name),stdin);
+        fscanf(stdin,"%s",name);
+        sprintf(toSend,"accepted Request|%s",name);
+        sendMsg(toSend,client_sock);
+    }
+    else if(strcmp(splitter,"list of accepted friends") == 0){
+        splitter = strtok(NULL,"|");
+        printf("arrives\n");
+        printf("list of accepted request below\n");
+        puts(splitter);
 
     }
 

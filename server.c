@@ -15,38 +15,25 @@
 struct Store{
   char data[30][256];
 };
+struct Accepted_id{
+    int id1; // person who sent the request
+    int id2; // recieved and accepted the request 
+};
+// keeps track of all information
 struct State{
     char register_users_names[30][25] ;
     int register_users_sock_id[30];
     struct Store request_messages[30];
-
+    struct Accepted_id accepted_id[30]; // all conections that were accepted
+    struct Accepted_id connection_requests[30];
 
   };
 
+// functions to test state array
+void printMatchingIds(struct State *state);
+void printAllNames(struct State *state);
 
-void addRegisterMessage(char name[],char mess[],struct State *state){
-
-    for (size_t i = 0; i < 30; i++)
-    {
-        if (strcmp(state->register_users_names[i],name) == 0)
-        {
-            
-            for (size_t in = 0; in < 30; in++){
-                
-                if(!strcmp(state->request_messages[i].data[in],"") == 0){
-
-                    strcpy(state->request_messages[i].data[in],mess);
-
-                    break;
-                }
-            }
-            break;
-        }
-        
-    }
-
-} 
-
+  // gets user name from socket id 
 void getUserName(int id,char name[],struct State *state){
 
     for (size_t i = 0; i < 30; i++)
@@ -62,6 +49,96 @@ void getUserName(int id,char name[],struct State *state){
     
 }
 
+void viewAcceptedFriendRequestForAUser(int lookup_id,struct State* state,char accepted_names[]){
+
+    char result[200] = "";
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        if (state->accepted_id[i].id1 == lookup_id )
+        {
+            char temp[30];
+            int accepted_user = state->accepted_id[i].id2; // person accepted the request
+            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            getUserName(accepted_user,temp,state);
+            strcat(result,temp);
+            strcat(result,"\n");
+        }
+        
+        
+    }
+    strcpy(accepted_names,result);
+    
+}
+
+void storeAcceptedFriendRequest(int id, int id2,struct State *state){
+    
+    static int i = 0;
+    i %= 30;
+
+    state->accepted_id[i].id1 = id;
+    state->accepted_id[i].id2 = id2;
+
+    i+= 1;
+
+
+}
+
+ // finds the certain users list of friend requests 
+void getRegisterMessage(int id,struct State *state,char output[]){
+
+    char result[200] = "";
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if ( state->register_users_sock_id[i] == id )
+        {
+            
+            for (size_t in = 0; in < 30; in++){
+                
+                if(!strcmp(state->request_messages[i].data[in],"") == 0){
+
+                    strcat(result,state->request_messages[i].data[in]);
+                    strcat(result,"\n");
+
+                    
+                }
+            }
+            break;
+        }
+        
+    }
+
+    strcpy(output,result);
+
+} 
+
+// adds name of person to get the friend request to and also stores there message
+void addRegisterMessage(char name[],char mess[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (strcmp(state->register_users_names[i],name) == 0)
+        {
+            
+            for (size_t in = 0; in < 30; in++){
+                
+                if(strcmp(state->request_messages[i].data[in],"") == 0){
+
+                    strcpy(state->request_messages[i].data[in],mess);
+
+                    break;
+                }
+            }
+            break;
+        }
+        
+    }
+
+} 
+
+
+
+// get socket process id from user name
 int getUserId(char name[],struct State *state){
 
     for (size_t i = 0; i < 30; i++)
@@ -76,6 +153,7 @@ int getUserId(char name[],struct State *state){
     return -1;
 }
 
+// gets list of all connected/registered users 
 char* getClientList(struct State *state){
 
     char userListTemp[1024] = "";
@@ -99,6 +177,7 @@ char* getClientList(struct State *state){
 
 }  
 
+// adds a newly registered users name and socket id to state
 void updateRegisteredClients(int sock,struct State *state,char name[]){
 
     
@@ -119,7 +198,7 @@ void updateRegisteredClients(int sock,struct State *state,char name[]){
 
 
 }
-
+// sends message to a user
 void sendMsg(char msg[],int sock_send){
     
     char buffer[BUF_SIZE];
@@ -129,6 +208,7 @@ void sendMsg(char msg[],int sock_send){
     send(sock_send,buffer,send_len,0);
     
 }
+// handles all incoming messages
 void handleMsg(int client_sock,char msg[], struct State *state){
 
     char *splitter = strtok(msg,"|");
@@ -158,18 +238,48 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
 
     }
-    else if (strcmp(splitter,"user name") == 0){
+    else if (strcmp(splitter,"user name") == 0){// need to fix
         printf("arrive\n");
         splitter = strtok(NULL,"|");
+        printf("the splitter is: $%s$",splitter);
         int pid = getUserId(splitter,state);
+        printAllNames(state);
+        printf("pid from username: %d\n",pid);
         char name[50],toSend[200];
         
         getUserName(client_sock,name,state);
-        sprintf(toSend,"connection request|%s send a request",name);
-        addRegisterMessage(splitter,"",state);
+        sprintf(toSend,"list of friend requests|%s send a request",name);
+        addRegisterMessage(splitter,"",state); // chaange name
         // sendMsg("",pid);
         sendMsg("request message send",client_sock);
         printf("done\n");
+    }
+    else if(strcmp(msg,"see friend requests")==0){
+        char result[200];
+        updateRegisteredClients(client_sock,state,result);
+        sendMsg(result,client_sock);
+    }
+
+    else if (strcmp(splitter,"accepted Request") == 0){
+        splitter = strtok(NULL,"|");
+        printf("accepted request name: %s$\n",splitter);
+        int userid = getUserId(splitter,state);
+        printf("userid === %d and clientSock == %d",userid,client_sock);
+        storeAcceptedFriendRequest(userid,client_sock,state);
+        printMatchingIds(state);
+        sendMsg("menu",client_sock);
+    }
+
+    else if (/* strcmp(splitter,"see all accepted friends") == 0 */strcmp(msg,"see all accepted friends") == 0){
+        printf("in accpted friend");
+        // splitter = strtok(NULL,"|");
+        char nameList[200],toSend[256];
+        printf("client sock is: %d\n",client_sock);
+        viewAcceptedFriendRequestForAUser(client_sock,state,nameList);
+        puts(nameList);
+        puts("after");
+        sprintf(toSend,"list of accepted friends|%s",nameList);
+        sendMsg(toSend,client_sock);
     }
 
 
@@ -194,6 +304,7 @@ int main(int argc, char *argv[]){
     struct State state;
 
 
+    // turns all sockets id's in staet to 0
     int temp[30] = {};
     memcpy(state.register_users_sock_id, temp, sizeof(temp));
 
@@ -324,7 +435,7 @@ int main(int argc, char *argv[]){
 
                     handleMsg(sd,buffer,&state);  
 
-                    // printf("%s\n",buffer);
+                    printf("%s\n",buffer);
                 }   
             }   
         }     
@@ -332,6 +443,21 @@ int main(int argc, char *argv[]){
     }
 
     close(sock_recv);
+}
+
+void printMatchingIds(struct State *state){
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        printf("%d ---- %d\n",state->accepted_id[i].id1,state->accepted_id[i].id2);
+    }
+    
+}
+
+void printAllNames(struct State *state){
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        printf("$%s$ - %d\n",state->register_users_names[i],state->register_users_sock_id[i]);
+    }
 }
 
 
