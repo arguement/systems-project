@@ -46,7 +46,9 @@ void handleMsg(int client_sock,char msg[]){
         puts("you are now registered to the system");
         // char pause[30];
         printf("click enter to view list of all users: \n");
-        getchar();
+        
+        char c = getchar();
+        while (getchar() != '\n');
 
         sendMsg("get user list",client_sock);
     }
@@ -76,7 +78,7 @@ void handleMsg(int client_sock,char msg[]){
         puts("this is the menu");
         puts("1 ----- see friend requests");
         puts("2 ----- see all accepted friends");
-        puts("1 ----- see friend requests");
+        puts("3 ----- select and message a friend");
         puts("1 ----- see friend requests");
 
         int response;
@@ -89,6 +91,9 @@ void handleMsg(int client_sock,char msg[]){
             break;
         case 2:
             sendMsg("see all accepted friends",client_sock);
+            break;
+        case 3:
+            sendMsg("select and message a friend",client_sock);
             break;
         default:
             break;
@@ -111,7 +116,30 @@ void handleMsg(int client_sock,char msg[]){
         printf("arrives\n");
         printf("list of accepted request below\n");
         puts(splitter);
+        sendMsg("menu",client_sock);
 
+    }
+    else if (strcmp(splitter,"select and message a friend")==0){
+        splitter = strtok(NULL,"|");
+        printf("list of users you can connect to\n");
+        puts(splitter);
+
+        printf("select the user you want to connect to: ");
+        char user[30],toSend[50];
+        fscanf(stdin,"%s",user);
+        sprintf(toSend,"client to send messages to|%s",user);
+        sendMsg(toSend,client_sock);
+    }
+    else if (/*sending messages*/strcmp(splitter,"messaging")==0){
+        splitter = strtok(NULL,"|");
+        printf("type msg > ");
+        char msg[30],toSend[50];
+        // fscanf(stdin,"%s",msg);
+        fgets(msg,sizeof(msg),stdin);
+        msg[strcspn(msg,"\n")] = 0;
+        sprintf(toSend,"message to someone|%s|%s",splitter,msg);
+        sendMsg(toSend,client_sock);
+        puts("");
     }
 
 }

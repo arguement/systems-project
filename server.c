@@ -29,7 +29,7 @@ struct State{
 
   };
 
-
+void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char accepted_names[]);
 void getFriendRequests(int id,char result[],struct State *state);
 void addRequestToAnotherUser(int client_sock,int pid,struct State *state);
 
@@ -291,7 +291,40 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         sprintf(toSend,"list of accepted friends|%s",nameList);
         sendMsg(toSend,client_sock);
     }
+    else if (strcmp(msg,"menu")==0){
+        sendMsg("menu",client_sock);
+    }
+    else if (strcmp(msg,"select and message a friend")==0){
+        char nameList[200],toSend[256];
+        
+        viewAcceptedFriendYouCanConnectTo(client_sock,state,nameList);
+        
+        sprintf(toSend,"select and message a friend|%s",nameList);
+        sendMsg(toSend,client_sock);
+    }
+    
+    else if (strcmp(splitter,"client to send messages to")==0){
+        splitter = strtok(NULL,"|");
+        char toSend[50];
 
+        sprintf(toSend,"messaging|%s",splitter);
+        sendMsg(toSend,client_sock);
+    }
+    else if (strcmp(splitter,"message to someone")==0){
+        splitter = strtok(NULL,"|");
+        char toSend[50],name[50];
+        strcpy(name,splitter);
+
+        splitter = strtok(NULL,"|");
+        printf("message: %s\n",splitter);
+
+        // need to store messages
+
+        sprintf(toSend,"messaging|%s",name);
+        sendMsg(toSend,client_sock);
+    }
+    
+    
 
 }
 
@@ -497,5 +530,33 @@ void getFriendRequests(int id,char result[],struct State *state){
     strcpy(result,temp);
     
 }
+void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char accepted_names[]){
 
+    char result[200] = "";
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        if (state->accepted_id[i].id1 == lookup_id )
+        {
+            char temp[30];
+            int accepted_user = state->accepted_id[i].id2; // person accepted the request
+            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            getUserName(accepted_user,temp,state);
+            strcat(result,temp);
+            strcat(result,"\n");
+        }
+        else if (state->accepted_id[i].id2 == lookup_id )
+        {
+            char temp[30];
+            int accepted_user = state->accepted_id[i].id1; // person accepted the request
+            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            getUserName(accepted_user,temp,state);
+            strcat(result,temp);
+            strcat(result,"\n");
+        }
+        
+        
+    }
+    strcpy(accepted_names,result);
+    
+}
 
