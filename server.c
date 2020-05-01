@@ -12,6 +12,15 @@
 #define LISTEN_PORT	60000
 #define CLIENT_SIZE 30
 
+int top = 0;
+
+struct Conversation{
+  int user1;
+  int user2;
+
+  char user1Msg[30][30];
+  char user2Msg[30][30];
+};
 struct Store{
   char data[30][256];
 };
@@ -26,8 +35,16 @@ struct State{
     struct Store request_messages[30];
     struct Accepted_id accepted_id[30]; // all conections that were accepted
     struct Accepted_id connection_requests[30]; // all requests sent to a client
+    struct Conversation convos[10];
 
   };
+void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]);
+void addConversationMsg(int id,int otherId,char msg[],struct Conversation convos[]);
+// adds converation
+void addConnvo(struct State* state,struct Conversation convo);
+
+// adds id to convo
+void setUserIds(int id1,int id2, struct Conversation* convo);
 
 void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char accepted_names[]);
 void getFriendRequests(int id,char result[],struct State *state);
@@ -307,6 +324,13 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         splitter = strtok(NULL,"|");
         char toSend[50];
 
+        int revieverID = getUserId(splitter,state);
+
+        struct Conversation convo;
+        setUserIds(client_sock,revieverID,&convo);
+
+        addConnvo(state,convo);
+
         sprintf(toSend,"messaging|%s",splitter);
         sendMsg(toSend,client_sock);
     }
@@ -319,6 +343,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         printf("message from %s",senderName);
         printf("message sent to %s",name);
         splitter = strtok(NULL,"|");
+        addConversationMsg(client_sock,getUserId(name,state),"splitter",state->convos);
         printf("message: %s\n",splitter);
 
         // need to store messages
@@ -561,5 +586,91 @@ void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char ac
     }
     strcpy(accepted_names,result);
     
+}
+
+void addConnvo(struct State* state,struct Conversation convo){
+  
+  top  %= 10;
+
+
+  state->convos[top] = convo;
+
+  printf("top ===== %d\n",top);
+
+  top++;
+}
+
+void setUserIds(int id1,int id2, struct Conversation* convo){
+  convo->user1 = id1;
+  convo->user2 = id2;
+  
+  for(int i =0; i < 30;i++){
+    strcpy(convo->user1Msg[i],"$");
+    strcpy(convo->user2Msg[i],"$");
+
+  }
+}
+
+
+void addConversationMsg(int id,int otherId,char msg[],struct Conversation convos[]){
+  for(int i =0; i < 30;i++){
+    
+    
+    if((convos->user1 == id && convos->user2 == otherId) || (convos->user1 == otherId && convos->user2 == id) ){
+
+      if (id == convos->user1){
+        for(int j=0; j < 30; j++){
+          if (strcmp(convos->user1Msg[j],"$") ==  0){
+            strcpy(convos->user1Msg[j],msg);
+            break;
+          }
+        }
+      }
+      else if (id == convos->user2){
+        for(int j=0; j < 30; j++){
+          if (strcmp(convos->user2Msg[j],"$") ==  0){
+            strcpy(convos->user2Msg[j],msg);
+            break;
+          }
+        }
+      }
+  break;
+    }
+    
+  }
+}
+void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]){
+
+  char allMsg[200]="";
+  for(int i =0; i < 30;i++){
+    
+    
+    if((convos->user1 == id && convos->user2 == otherId) || (convos->user1 == otherId && convos->user2 == id) ){
+
+      if (id == convos->user1){
+        for(int j=0; j < 30; j++){
+          if (strcmp(convos->user2Msg[j],"$") !=  0){
+         
+            strcat(allMsg, convos->user2Msg[j]);
+            strcat(allMsg, "\n");
+          }
+        }
+        break;
+      }
+      else if (id == convos->user2){
+        for(int j=0; j < 30; j++){
+          if (strcmp(convos->user1Msg[j],"$") !=  0){
+
+            strcat(allMsg, convos->user1Msg[j]);
+            strcat(allMsg, "\n");
+          }
+        }
+        break;
+      }
+  break;
+    }
+    
+  }
+  strcpy(msg, allMsg);
 }
 

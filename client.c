@@ -126,6 +126,7 @@ void handleMsg(int client_sock,char msg[]){
 
         printf("select the user you want to connect to: ");
         char user[30],toSend[50];
+        
         fscanf(stdin,"%s",user);
         sprintf(toSend,"client to send messages to|%s",user);
         sendMsg(toSend,client_sock);
@@ -135,11 +136,17 @@ void handleMsg(int client_sock,char msg[]){
         printf("type msg > ");
         char msg[30],toSend[50];
         // fscanf(stdin,"%s",msg);
+
+        /* match up to newline */
+        // scanf("%*[^\n]"); 
+        // /* discard the newline */
+        scanf("%*c"); 
+
         fgets(msg,sizeof(msg),stdin);
-        msg[strcspn(msg,"\n")] = 0;
+        // msg[strcspn(msg,"\n")] = 0;
         sprintf(toSend,"message to someone|%s|%s",splitter,msg);
         sendMsg(toSend,client_sock);
-        puts("");
+        printf("\n");
     }
 
 }
