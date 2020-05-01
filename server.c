@@ -312,9 +312,12 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
     else if (strcmp(splitter,"message to someone")==0){
         splitter = strtok(NULL,"|");
-        char toSend[50],name[50];
+        char toSend[50],name[50],senderName[50];
         strcpy(name,splitter);
-
+        
+        getUserName(client_sock,senderName,state);
+        printf("message from %s",senderName);
+        printf("message sent to %s",name);
         splitter = strtok(NULL,"|");
         printf("message: %s\n",splitter);
 
