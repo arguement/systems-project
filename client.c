@@ -133,9 +133,13 @@ void handleMsg(int client_sock,char msg[]){
     }
     else if (/*sending messages*/strcmp(splitter,"messaging")==0){
         splitter = strtok(NULL,"|");
-        printf("type msg > ");
-        char msg[30],toSend[50];
+        
+        char msg[30],senderName[50],toSend[50];
+        strcpy(senderName,splitter);
         // fscanf(stdin,"%s",msg);
+        splitter = strtok(NULL,"|");
+        printf("previous meesages: \n%s\n",splitter);
+        printf("type msg > ");
 
         /* match up to newline */
         // scanf("%*[^\n]"); 
@@ -144,7 +148,7 @@ void handleMsg(int client_sock,char msg[]){
 
         fgets(msg,sizeof(msg),stdin);
         // msg[strcspn(msg,"\n")] = 0;
-        sprintf(toSend,"message to someone|%s|%s",splitter,msg);
+        sprintf(toSend,"message to someone|%s|%s",senderName,msg);
         sendMsg(toSend,client_sock);
         printf("\n");
     }

@@ -336,19 +336,22 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
     else if (strcmp(splitter,"message to someone")==0){
         splitter = strtok(NULL,"|");
-        char toSend[50],name[50],senderName[50];
+        char toSend[1150],name[50],senderName[50];
         strcpy(name,splitter);
         
         getUserName(client_sock,senderName,state);
         printf("message from %s",senderName);
         printf("message sent to %s",name);
         splitter = strtok(NULL,"|");
-        addConversationMsg(client_sock,getUserId(name,state),"splitter",state->convos);
+        addConversationMsg(client_sock,getUserId(name,state),splitter,state->convos);
         printf("message: %s\n",splitter);
 
         // need to store messages
+        char store[500];
+        getConvoMsg(client_sock,getUserId(name,state),store,state->convos);
+        puts(store);
 
-        sprintf(toSend,"messaging|%s",name);
+        sprintf(toSend,"messaging|%s|%s",name,store);
         sendMsg(toSend,client_sock);
     }
     
