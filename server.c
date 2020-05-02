@@ -13,6 +13,7 @@
 #define CLIENT_SIZE 30
 
 int top = 0;
+int workMsg = 0;
 
 struct Conversation{
   int user1;
@@ -36,12 +37,17 @@ struct State{
     struct Accepted_id accepted_id[30]; // all conections that were accepted
     struct Accepted_id connection_requests[30]; // all requests sent to a client
     struct Conversation convos[10];
+    char workGroupConvos[100][70];
 
   };
-void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]);
-void addConversationMsg(int id,int otherId,char msg[],struct Conversation convos[]);
-// adds converation
-void addConnvo(struct State* state,struct Conversation convo);
+
+void getConvosFromWorkGroup(char msg[],struct State* state); // gets all the work group conversations
+void addConvoToWorkGroup(char msg[],struct State* state);// store all work group messages  
+
+
+void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]); // get conversations for a specific user
+void addConversationMsg(int id,int otherId,char msg[],struct Conversation convos[]); // adds a specific user conversation to his personal list
+void addConnvo(struct State* state,struct Conversation convo); // adds converation
 
 // adds id to convo
 void setUserIds(int id1,int id2, struct Conversation* convo);
@@ -369,6 +375,10 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
         sprintf(message,"fr %s:- %s",senderName,splitter);
         puts(message);
+        addConvoToWorkGroup(message,state);
+        char allWorkMsg[550];
+        getConvosFromWorkGroup(allWorkMsg,state);
+        printf("all work messages: \n%s",allWorkMsg);
         sendMsg("send message in work group",client_sock);
     }
     
@@ -692,5 +702,26 @@ void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]){
     
   }
   strcpy(msg, allMsg);
+}
+
+void addConvoToWorkGroup(char msg[],struct State* state){
+    workMsg %= 100;
+
+    strcpy(state->workGroupConvos[workMsg],msg);
+
+    workMsg++; 
+}
+
+void getConvosFromWorkGroup(char msg[],struct State* state){
+
+    char allCovos[500] = "";
+
+    for (size_t i = 0; i < workMsg; i++)
+    {
+        strcat(allCovos,state->workGroupConvos[i]);
+        strcat(allCovos,"\n");
+    }
+    
+    strcpy(msg,allCovos);
 }
 
