@@ -371,6 +371,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         splitter = strtok(NULL,"|");
         char message[100];
         char senderName[30];
+        char toSend[700];
         getUserName(client_sock,senderName,state);
 
         sprintf(message,"fr %s:- %s",senderName,splitter);
@@ -379,7 +380,9 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char allWorkMsg[550];
         getConvosFromWorkGroup(allWorkMsg,state);
         printf("all work messages: \n%s",allWorkMsg);
-        sendMsg("send message in work group",client_sock);
+
+        sprintf(toSend,"send message in work group|%s",allWorkMsg);
+        sendMsg(toSend,client_sock);
     }
     
     

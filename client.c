@@ -168,8 +168,10 @@ void handleMsg(int client_sock,char msg[]){
         sendMsg(toSend,client_sock);
         printf("\n");
     }
-    else if (strcmp(msg,"send message in work group")==0){
-      
+    else if (strcmp(splitter,"send message in work group")==0){
+        splitter = strtok(NULL,"|");
+
+        printf("previous meesages: \n%s\n",splitter);
         
         printf("type msg (work group) > ");
         char msg[30],toSend[50];
