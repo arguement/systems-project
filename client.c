@@ -21,6 +21,7 @@ void sendMsg(char msg[],int sock_send){
     send(sock_send,buffer,send_len,0);
     
 }
+void input(char str[],int size);
 
 void handleMsg(int client_sock,char msg[]){
 
@@ -32,7 +33,8 @@ void handleMsg(int client_sock,char msg[]){
         char name[30];
         printf("enter your name: ");
         // fgets(name,sizeof(name),stdin);
-        fscanf(stdin,"%s",name);
+        // fscanf(stdin,"%s",name);
+        input(name,sizeof(name)); // -- here
 
         char strToSend[40] ;
         strcpy(strToSend,"register-data|");
@@ -48,7 +50,7 @@ void handleMsg(int client_sock,char msg[]){
         printf("click enter to view list of all users: \n");
         
         char c = getchar();
-        while (getchar() != '\n');
+        // while (getchar() != '\n');
 
         sendMsg("get user list",client_sock);
     }
@@ -61,7 +63,8 @@ void handleMsg(int client_sock,char msg[]){
         printf("enter the name of the client you want to connect to: ");
         
         // fgets(name,sizeof(name),stdin);
-        fscanf(stdin,"%s",name);
+        // fscanf(stdin,"%s",name);
+        input(name,sizeof(name)); // -- here
         strcat(toSend,name);
 
         sendMsg(toSend,client_sock);
@@ -79,11 +82,16 @@ void handleMsg(int client_sock,char msg[]){
         puts("1 ----- see friend requests");
         puts("2 ----- see all accepted friends");
         puts("3 ----- select and message a friend");
-        puts("1 ----- see friend requests");
+        puts("4 ----- join work group");
+        puts("5 ----- join friend group");
 
         int response;
+        char temp[100];
         // scanf("%d",&response);
-        fscanf(stdin,"%d",&response);
+        // fscanf(stdin,"%d",&response);
+        fgets(temp,sizeof(temp),stdin); // - here
+        sscanf(temp,"%d",&response);
+
         switch (response)
         {
         case 1:
@@ -94,6 +102,9 @@ void handleMsg(int client_sock,char msg[]){
             break;
         case 3:
             sendMsg("select and message a friend",client_sock);
+            break;
+        case 4:
+            sendMsg("register for work group",client_sock);
             break;
         default:
             break;
@@ -107,7 +118,8 @@ void handleMsg(int client_sock,char msg[]){
         puts("accept a friend: ");
         char name[40],toSend[50];
         // fgets(name,sizeof(name),stdin);
-        fscanf(stdin,"%s",name);
+        // fscanf(stdin,"%s",name);
+        input(name,sizeof(name)); // -- here
         sprintf(toSend,"accepted Request|%s",name);
         sendMsg(toSend,client_sock);
     }
@@ -127,7 +139,9 @@ void handleMsg(int client_sock,char msg[]){
         printf("select the user you want to connect to: ");
         char user[30],toSend[50];
         
-        fscanf(stdin,"%s",user);
+        // fscanf(stdin,"%s",user);
+        input(user,sizeof(user)); // -- here
+
         sprintf(toSend,"client to send messages to|%s",user);
         sendMsg(toSend,client_sock);
     }
@@ -144,13 +158,30 @@ void handleMsg(int client_sock,char msg[]){
         /* match up to newline */
         // scanf("%*[^\n]"); 
         // /* discard the newline */
-        scanf("%*c"); 
+        // scanf("%*c"); 
 
         fgets(msg,sizeof(msg),stdin);
+        // input(msg,sizeof(msg)); // -- here
+
         // msg[strcspn(msg,"\n")] = 0;
         sprintf(toSend,"message to someone|%s|%s",senderName,msg);
         sendMsg(toSend,client_sock);
         printf("\n");
+    }
+    else if (strcmp(msg,"send message in work group")==0){
+      
+        
+        printf("type msg (work group) > ");
+        char msg[30],toSend[50];
+
+        // fgets(msg,sizeof(msg),stdin);
+        input(msg,sizeof(msg)); // -- here
+        puts(msg);
+        // printf("\n");
+        sprintf(toSend,"message to work group|%s",msg);
+        
+        sendMsg(toSend,client_sock);
+
     }
 
 }
@@ -205,6 +236,11 @@ int main(int argc, char *argv[]){
         }
 
     close(sock_send);
+}
+
+void input(char str[],int size){
+  fgets(str,size,stdin);
+  sscanf(str,"%s",str);
 }
 
 

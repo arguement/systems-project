@@ -231,7 +231,7 @@ void sendMsg(char msg[],int sock_send){
 }
 // handles all incoming messages
 void handleMsg(int client_sock,char msg[], struct State *state){
-
+    puts(msg);
     char *splitter = strtok(msg,"|");
     if (strcmp(msg,"register")==0){
         puts("a user is trying to register...");
@@ -353,6 +353,23 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
         sprintf(toSend,"messaging|%s|%s",name,store);
         sendMsg(toSend,client_sock);
+    }
+    else if(strcmp(msg,"register for work group")==0){
+        char requesterName[50];
+        getUserName(client_sock,requesterName,state);
+        printf("registering for work group\n");
+        printf("%s now registered in the group\n",requesterName);
+        sendMsg("send message in work group",client_sock);
+    }
+    else if(strcmp(splitter,"message to work group")==0){
+        splitter = strtok(NULL,"|");
+        char message[100];
+        char senderName[30];
+        getUserName(client_sock,senderName,state);
+
+        sprintf(message,"fr %s:- %s",senderName,splitter);
+        puts(message);
+        sendMsg("send message in work group",client_sock);
     }
     
     
@@ -509,7 +526,7 @@ int main(int argc, char *argv[]){
 
                     handleMsg(sd,buffer,&state);  
 
-                    printf("%s\n",buffer);
+                    // printf("buffer: %s\n",buffer);
                 }   
             }   
         }     
