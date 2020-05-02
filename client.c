@@ -106,6 +106,9 @@ void handleMsg(int client_sock,char msg[]){
         case 4:
             sendMsg("register for work group",client_sock);
             break;
+        case 5:
+            sendMsg("register for friend group",client_sock);
+            break;
         default:
             break;
         }
@@ -181,6 +184,23 @@ void handleMsg(int client_sock,char msg[]){
         puts(msg);
         // printf("\n");
         sprintf(toSend,"message to work group|%s",msg);
+        
+        sendMsg(toSend,client_sock);
+
+    }
+    else if (strcmp(splitter,"send message in friend group")==0){
+        splitter = strtok(NULL,"|");
+
+        printf("previous meesages: \n%s\n",splitter);
+        
+        printf("type msg (friend group) > ");
+        char msg[30],toSend[50];
+
+        // fgets(msg,sizeof(msg),stdin);
+        input(msg,sizeof(msg)); // -- here
+        puts(msg);
+        // printf("\n");
+        sprintf(toSend,"message to friend group|%s",msg);
         
         sendMsg(toSend,client_sock);
 

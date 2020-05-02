@@ -14,6 +14,7 @@
 
 int top = 0;
 int workMsg = 0;
+int friendMsg = 0;
 
 struct Conversation{
   int user1;
@@ -38,11 +39,15 @@ struct State{
     struct Accepted_id connection_requests[30]; // all requests sent to a client
     struct Conversation convos[10];
     char workGroupConvos[100][70];
+    char friendGroupConvos[100][70];
 
   };
 
 void getConvosFromWorkGroup(char msg[],struct State* state); // gets all the work group conversations
 void addConvoToWorkGroup(char msg[],struct State* state);// store all work group messages  
+
+void getConvosFromFriendGroup(char msg[],struct State* state); // gets all the friend group conversations
+void addConvoToFriendGroup(char msg[],struct State* state);// store all work group messages  
 
 
 void getConvoMsg(int id,int otherId,char msg[],struct Conversation convos[]); // get conversations for a specific user
@@ -384,6 +389,34 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         sprintf(toSend,"send message in work group|%s",allWorkMsg);
         sendMsg(toSend,client_sock);
     }
+
+
+
+
+    else if(strcmp(msg,"register for friend group")==0){
+        char requesterName[50];
+        getUserName(client_sock,requesterName,state);
+        printf("registering for friend group\n");
+        printf("%s now registered in the group\n",requesterName);
+        sendMsg("send message in friend group",client_sock);
+    }
+    else if(strcmp(splitter,"message to friend group")==0){
+        splitter = strtok(NULL,"|");
+        char message[100];
+        char senderName[30];
+        char toSend[700];
+        getUserName(client_sock,senderName,state);
+
+        sprintf(message,"fr %s:- %s",senderName,splitter);
+        puts(message);
+        addConvoToFriendGroup(message,state);
+        char allWorkMsg[550];
+        getConvosFromFriendGroup(allWorkMsg,state);
+        printf("all work messages: \n%s",allWorkMsg);
+
+        sprintf(toSend,"send message in friend group|%s",allWorkMsg);
+        sendMsg(toSend,client_sock);
+    }
     
     
 
@@ -722,6 +755,29 @@ void getConvosFromWorkGroup(char msg[],struct State* state){
     for (size_t i = 0; i < workMsg; i++)
     {
         strcat(allCovos,state->workGroupConvos[i]);
+        strcat(allCovos,"\n");
+    }
+    
+    strcpy(msg,allCovos);
+}
+
+
+void addConvoToFriendGroup(char msg[],struct State* state){
+
+    friendMsg %= 100;
+
+    strcpy(state->friendGroupConvos[friendMsg]/* workFriendConvos[workMsg] */,msg);
+
+    friendMsg++; 
+}
+
+void getConvosFromFriendGroup(char msg[],struct State* state){
+
+    char allCovos[500] = "";
+
+    for (size_t i = 0; i < friendMsg; i++)
+    {
+        strcat(allCovos,state->friendGroupConvos[i]);
         strcat(allCovos,"\n");
     }
     
