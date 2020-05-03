@@ -135,6 +135,7 @@ void handleMsg(int client_sock,char msg[]){
         input(name,sizeof(name)); // -- here
         sprintf(toSend,"accepted Request|%s",name);
         sendMsg(toSend,client_sock);
+        printf("you can now connect to a a friend\n");
     }
     else if(strcmp(splitter,"list of accepted friends") == 0){
         splitter = strtok(NULL,"|");
@@ -218,7 +219,7 @@ void handleMsg(int client_sock,char msg[]){
     }
     else if (strcmp(splitter,"errors")==0){
         splitter = strtok(NULL,"|");
-        printf("error message: %s\n",splitter);
+        printf("error message: %s\n\n",splitter);
         sendMsg("menu",client_sock);
     }
 

@@ -266,10 +266,15 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         strcpy( users,getClientList(state,client_sock));
         // puts("before list");
         // puts(users);
+        if (strcmp(users,"")==0){
+            sendMsg("errors|no registerd clients to see. someone else needs to register",client_sock);
+        }
+        else{
         char toSend[1024]="registered users list|";
         strcat(toSend,users);
         // puts(toSend);
         sendMsg(toSend,client_sock);
+        }
 
 
     }
