@@ -39,10 +39,14 @@ void handleMsg(int client_sock,char msg[]){
         char strToSend[40] ;
         strcpy(strToSend,"register-data|");
         strcat(strToSend,name);
-        printf("toSend in request ack: $%s$",strToSend);
+        // printf("toSend in request ack: $%s$",strToSend);
         char buffer[BUF_SIZE];
         int send_len;
         sendMsg(strToSend,client_sock);
+    }
+    else if (strcmp(msg,"registering")==0){
+        puts("you have been registered");
+        sendMsg("menu",client_sock);
     }
     else if (strcmp(msg,"you have been registered")==0){
         puts("you are now registered to the system");
@@ -68,6 +72,8 @@ void handleMsg(int client_sock,char msg[]){
         strcat(toSend,name);
 
         sendMsg(toSend,client_sock);
+        printf("resquest to user %s sent\n",name);
+        printf("accept request in other client by clicking option 1...");
 
 
     }
@@ -84,6 +90,7 @@ void handleMsg(int client_sock,char msg[]){
         puts("3 ----- select and message a friend");
         puts("4 ----- join work group");
         puts("5 ----- join friend group");
+        puts("6 ----- see connected users to connect to (other users need to be registered first)");
 
         int response;
         char temp[100];
@@ -108,6 +115,9 @@ void handleMsg(int client_sock,char msg[]){
             break;
         case 5:
             sendMsg("register for friend group",client_sock);
+            break;
+        case 6:
+            sendMsg("see connected users to connect to",client_sock);
             break;
         default:
             break;
@@ -155,7 +165,7 @@ void handleMsg(int client_sock,char msg[]){
         strcpy(senderName,splitter);
         // fscanf(stdin,"%s",msg);
         splitter = strtok(NULL,"|");
-        printf("previous meesages: \n%s\n",splitter);
+        printf("previous meesages other client: \n%s\n",splitter);
         printf("type msg > ");
 
         /* match up to newline */
@@ -164,6 +174,7 @@ void handleMsg(int client_sock,char msg[]){
         // scanf("%*c"); 
 
         fgets(msg,sizeof(msg),stdin);
+        printf("message send: %s\n",msg);
         // input(msg,sizeof(msg)); // -- here
 
         // msg[strcspn(msg,"\n")] = 0;
@@ -204,6 +215,11 @@ void handleMsg(int client_sock,char msg[]){
         
         sendMsg(toSend,client_sock);
 
+    }
+    else if (strcmp(splitter,"errors")==0){
+        splitter = strtok(NULL,"|");
+        printf("error message: %s\n",splitter);
+        sendMsg("menu",client_sock);
     }
 
 }

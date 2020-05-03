@@ -186,13 +186,13 @@ int getUserId(char name[],struct State *state){
 }
 
 // gets list of all connected/registered users 
-char* getClientList(struct State *state){
+char* getClientList(struct State *state,int id){
 
     char userListTemp[1024] = "";
 
     for (size_t i = 0; i < 30; i++)
     {
-        if (state->register_users_sock_id[i] != 0)
+        if (state->register_users_sock_id[i] != 0 && state->register_users_sock_id[i] != id)
         {
             
             strcat(userListTemp,state->register_users_names[i]);
@@ -242,7 +242,7 @@ void sendMsg(char msg[],int sock_send){
 }
 // handles all incoming messages
 void handleMsg(int client_sock,char msg[], struct State *state){
-    puts(msg);
+    // puts(msg);
     char *splitter = strtok(msg,"|");
     if (strcmp(msg,"register")==0){
         puts("a user is trying to register...");
@@ -255,12 +255,15 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         splitter = strtok(NULL,"|");
         printf("%s is now registered in the system\n",splitter);
         updateRegisteredClients(client_sock,state,splitter);
+        sendMsg(/* "you have been registered" */"registering",client_sock);
+    }
+    else if (strcmp(msg,"see connected users to connect to") ==  0){
         sendMsg("you have been registered",client_sock);
     }
     else if(strcmp(msg,"get user list")==0){
 
         char users[1024];
-        strcpy( users,getClientList(state));
+        strcpy( users,getClientList(state,client_sock));
         // puts("before list");
         // puts(users);
         char toSend[1024]="registered users list|";
@@ -271,12 +274,12 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
     }
     else if (strcmp(splitter,"user name") == 0){// need to fix
-        printf("arrive\n");
+        // printf("arrive\n");
         splitter = strtok(NULL,"|");
-        printf("the splitter is: $%s$",splitter);
+        // printf("the splitter is: $%s$",splitter);
         int pid = getUserId(splitter,state);
-        printAllNames(state);
-        printf("pid from username: %d\n",pid);
+        // printAllNames(state);
+        // printf("pid from username: %d\n",pid);
         char name[50],toSend[200];
         
         // getUserName(client_sock,name,state);
@@ -291,20 +294,29 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char result[300];
         // updateRegisteredClients(client_sock,state,result);
         getFriendRequests(client_sock,result,state);
-        printf("results below from friend req\n");
-        puts(result);
+
+        if (strcmp(result,"") == 0){
+            sendMsg("errors|no resgister user has sent you a friend request",client_sock);
+        }
+        else{
+
+        
+        // printf("results below from friend req\n");
+        // puts(result);
         char toSend[320];
         sprintf(toSend,"list of friend requests|%s",result);
         sendMsg(toSend,client_sock);
+
+        }
     }
 
     else if (strcmp(splitter,"accepted Request") == 0){
         splitter = strtok(NULL,"|");
         printf("accepted request name: %s$\n",splitter);
         int userid = getUserId(splitter,state);
-        printf("userid === %d and clientSock == %d",userid,client_sock);
+        // printf("userid === %d and clientSock == %d",userid,client_sock);
         storeAcceptedFriendRequest(userid,client_sock,state);
-        printMatchingIds(state);
+        // printMatchingIds(state);
         sendMsg("menu",client_sock);
     }
 
@@ -312,12 +324,17 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         printf("in accpted friend");
         // splitter = strtok(NULL,"|");
         char nameList[200],toSend[256];
-        printf("client sock is: %d\n",client_sock);
+        // printf("client sock is: %d\n",client_sock);
         viewAcceptedFriendRequestForAUser(client_sock,state,nameList);
         puts(nameList);
-        puts("after");
-        sprintf(toSend,"list of accepted friends|%s",nameList);
-        sendMsg(toSend,client_sock);
+        if (strcmp(nameList,"") == 0){
+            sendMsg("errors|no accepted friend requests. Someone must have accepted a friend request first",client_sock);
+        }
+        else{
+        // puts("after");
+            sprintf(toSend,"list of accepted friends|%s",nameList);
+            sendMsg(toSend,client_sock);
+        }
     }
     else if (strcmp(msg,"menu")==0){
         sendMsg("menu",client_sock);
@@ -326,9 +343,14 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char nameList[200],toSend[256];
         
         viewAcceptedFriendYouCanConnectTo(client_sock,state,nameList);
+        if (strcmp(nameList,"") ==  0){
+            sendMsg("errors|you or a friend needs to send and accept a friend request first",client_sock);
+        }
+        else{
         
         sprintf(toSend,"select and message a friend|%s",nameList);
         sendMsg(toSend,client_sock);
+        }
     }
     
     else if (strcmp(splitter,"client to send messages to")==0){
