@@ -175,6 +175,11 @@ void handleMsg(int client_sock,char msg[]){
         // scanf("%*c"); 
 
         fgets(msg,sizeof(msg),stdin);
+        if (strcmp(msg,"end\n") == 0){
+            printf("...............ending message\n");
+            sendMsg("menu",client_sock);
+            return;
+        }
         printf("message send: %s\n",msg);
         // input(msg,sizeof(msg)); // -- here
 
@@ -193,6 +198,11 @@ void handleMsg(int client_sock,char msg[]){
 
         // fgets(msg,sizeof(msg),stdin);
         input(msg,sizeof(msg)); // -- here
+        if (strcmp(msg,"end") == 0){
+            printf("...............ending message\n");
+            sendMsg("menu",client_sock);
+            return;
+        }
         puts(msg);
         // printf("\n");
         sprintf(toSend,"message to work group|%s",msg);
@@ -210,6 +220,11 @@ void handleMsg(int client_sock,char msg[]){
 
         // fgets(msg,sizeof(msg),stdin);
         input(msg,sizeof(msg)); // -- here
+        if (strcmp(msg,"end") == 0){
+            printf("...............ending message\n");
+            sendMsg("menu",client_sock);
+            return;
+        }
         puts(msg);
         // printf("\n");
         sprintf(toSend,"message to friend group|%s",msg);

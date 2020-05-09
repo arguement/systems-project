@@ -40,6 +40,7 @@ struct State{
     struct Conversation convos[10];
     char workGroupConvos[100][70];
     char friendGroupConvos[100][70];
+    FILE* log;
 
   };
 
@@ -90,7 +91,7 @@ void viewAcceptedFriendRequestForAUser(int lookup_id,struct State* state,char ac
         {
             char temp[30];
             int accepted_user = state->accepted_id[i].id2; // person accepted the request
-            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            // printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
             getUserName(accepted_user,temp,state);
             strcat(result,temp);
             strcat(result,"\n");
@@ -471,6 +472,8 @@ int main(int argc, char *argv[]){
     // turns all sockets id's in staet to 0
     int temp[30] = {};
     memcpy(state.register_users_sock_id, temp, sizeof(temp));
+
+    state.log = fopen("logs.txt","w");
 
             
     sock_recv=socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
