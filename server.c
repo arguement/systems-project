@@ -16,10 +16,16 @@ int top = 0;
 int workMsg = 0;
 int friendMsg = 0;
 
+// all files used 
 struct Logs{
-    FILE *reg_users;
+    FILE *reg_users; // all registered users 
+    FILE *all_available_friends; // all available potential friends/contacts
+    FILE *all_private_messages;
+    FILE *all_workgroup_messages;
+    FILE *all_friendgroup_messages;
 };
 
+// conversation between 2 users
 struct Conversation{
   int user1;
   int user2;
@@ -47,6 +53,8 @@ struct State{
     struct Logs logs;
 
   };
+
+void logToFile(FILE *fp,char filename[],char filemethod[],char mess[]); // append content to file
 
 void getConvosFromWorkGroup(char msg[],struct State* state); // gets all the work group conversations
 void addConvoToWorkGroup(char msg[],struct State* state);// store all work group messages  
@@ -259,6 +267,15 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     else if(strcmp(splitter,"register-data") == 0){
         splitter = strtok(NULL,"|");
         printf("%s is now registered in the system\n",splitter);
+
+        // logs to the file about all persons who registered to the system
+        char logger[60];
+        sprintf(logger,"%s is now registered in the system\n",splitter);
+        state->logs.all_available_friends = fopen("all_available_friend","a");
+        fprintf(state->logs.all_available_friends,"%s",logger);
+        fclose(state->logs.all_available_friends);
+
+
         updateRegisteredClients(client_sock,state,splitter);
         sendMsg(/* "you have been registered" */"registering",client_sock);
     }
@@ -306,7 +323,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         addRequestToAnotherUser(client_sock,pid,state); // arg1 - sender of request arg2 - reciever of request
         // sendMsg("",pid);
         sendMsg("request message send",client_sock);
-        printf("done\n");
+        // printf("done\n");
     }
     else if(strcmp(msg,"see friend requests")==0){
         char result[300];
@@ -319,8 +336,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         else{
 
         
-        // printf("results below from friend req\n");
-        // puts(result);
+        
         char toSend[320];
         sprintf(toSend,"list of friend requests|%s",result);
         sendMsg(toSend,client_sock);
@@ -339,8 +355,8 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
 
     else if (/* strcmp(splitter,"see all accepted friends") == 0 */strcmp(msg,"see all accepted friends") == 0){
-        printf("in accpted friend");
-        // splitter = strtok(NULL,"|");
+       
+       
         char nameList[200],toSend[256];
         // printf("client sock is: %d\n",client_sock);
         viewAcceptedFriendRequestForAUser(client_sock,state,nameList);
@@ -349,7 +365,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
             sendMsg("errors|no accepted friend requests. Someone must have accepted a friend request first",client_sock);
         }
         else{
-        // puts("after");
+        
             sprintf(toSend,"list of accepted friends|%s",nameList);
             sendMsg(toSend,client_sock);
         }
@@ -397,6 +413,10 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         addConversationMsg(client_sock,getUserId(name,state),splitter,state->convos);
         printf("message: %s\n",splitter);
 
+        char logger[60];
+        sprintf(logger,"from: %s\nto: %s\nmessage: %s\n\n",senderName,name,splitter);
+        logToFile( state->logs.all_private_messages,"all_private_messages.txt","a",logger); // saves private message to file
+
         // need to store messages
         char store[500];
         getConvoMsg(client_sock,getUserId(name,state),store,state->convos);
@@ -419,9 +439,10 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char toSend[700];
         getUserName(client_sock,senderName,state);
 
-        sprintf(message,"fr %s:- %s",senderName,splitter);
+        sprintf(message,"fr %s:- %s\n",senderName,splitter);
         puts(message);
         addConvoToWorkGroup(message,state);
+        logToFile(state->logs.all_workgroup_messages,"all_workgroup_messages.txt","a",message); // saves to friend group file
         char allWorkMsg[550];
         getConvosFromWorkGroup(allWorkMsg,state);
         printf("all work messages: \n%s",allWorkMsg);
@@ -447,9 +468,10 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char toSend[700];
         getUserName(client_sock,senderName,state);
 
-        sprintf(message,"fr %s:- %s",senderName,splitter);
+        sprintf(message,"fr %s:- %s\n",senderName,splitter);
         puts(message);
         addConvoToFriendGroup(message,state);
+        logToFile(state->logs.all_friendgroup_messages,"all_friendgroup_messages.txt","a",message); // saves to friend group file
         char allWorkMsg[550];
         getConvosFromFriendGroup(allWorkMsg,state);
         printf("all work messages: \n%s",allWorkMsg);
@@ -598,6 +620,18 @@ int main(int argc, char *argv[]){
                     getpeername(sd , (struct sockaddr*)&my_addr , (socklen_t*)&addrlen);   
                     printf("Host disconnected , ip %s , port %d \n" ,  
                           inet_ntoa(my_addr.sin_addr) , ntohs(my_addr.sin_port));   
+
+
+                    // removes user after disconnecting
+                    for (size_t i = 0; i < 30; i++) 
+                    {
+                        if (state.register_users_sock_id[i] == sd)
+                        {
+                            state.register_users_sock_id[i] = 0;
+                            break;
+                        }
+                        
+                    }      
                          
                     //Close the socket and mark as 0 in list for reuse  
                     close( sd );   
@@ -675,7 +709,7 @@ void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char ac
         {
             char temp[30];
             int accepted_user = state->accepted_id[i].id2; // person accepted the request
-            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            
             getUserName(accepted_user,temp,state);
             strcat(result,temp);
             strcat(result,"\n");
@@ -684,7 +718,7 @@ void viewAcceptedFriendYouCanConnectTo(int lookup_id,struct State* state,char ac
         {
             char temp[30];
             int accepted_user = state->accepted_id[i].id1; // person accepted the request
-            printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
+            // printf("viewAcceptedFriendRequestForAUser -- acc_user: %d",accepted_user);
             getUserName(accepted_user,temp,state);
             strcat(result,temp);
             strcat(result,"\n");
@@ -824,5 +858,14 @@ void getConvosFromFriendGroup(char msg[],struct State* state){
     }
     
     strcpy(msg,allCovos);
+}
+
+void logToFile(FILE *fp,char filename[],char filemethod[],char mess[]){
+
+
+    fp = fopen(filename,filemethod);
+    fprintf(fp,"%s",mess);
+    fclose(fp);
+        // need to store messages
 }
 

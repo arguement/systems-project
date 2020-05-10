@@ -87,7 +87,7 @@ void handleMsg(int client_sock,char msg[]){
         puts("this is the menu");
         puts("1 ----- see friend requests");
         puts("2 ----- see all accepted friends");
-        puts("3 ----- select and message a friend");
+        puts("3 ----- select and message a friend (after connection request accepted)");
         puts("4 ----- join work group");
         puts("5 ----- join friend group");
         puts("6 ----- see connected users to connect to (other users need to be registered first)");

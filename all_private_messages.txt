@@ -1,0 +1,18 @@
+from: jj
+to: mm
+message: hello
+from: mm
+to: jj
+message: blah
+from: john
+to: jordan
+message: jordan
+
+from: john
+to: jordan
+message: jason
+
+from: john
+to: jordan
+message: williams
+
