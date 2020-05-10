@@ -9,3 +9,6 @@ fr jordan:- shore
 fr john:- jordan
 fr john:- jason
 fr john:- williams
+fr jordan:- jordan
+fr jason:- wow
+fr jordan:- hey

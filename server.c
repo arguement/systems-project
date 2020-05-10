@@ -430,7 +430,13 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         getUserName(client_sock,requesterName,state);
         printf("registering for work group\n");
         printf("%s now registered in the group\n",requesterName);
-        sendMsg("send message in work group",client_sock);
+
+        char allWorkMsg[550],toSend[700];
+        getConvosFromWorkGroup(allWorkMsg,state);
+        sprintf(toSend,"send message in work group|%s",allWorkMsg);
+
+        // sendMsg("send message in work group",client_sock);
+        sendMsg(toSend,client_sock);
     }
     else if(strcmp(splitter,"message to work group")==0){
         splitter = strtok(NULL,"|");
@@ -459,7 +465,14 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         getUserName(client_sock,requesterName,state);
         printf("registering for friend group\n");
         printf("%s now registered in the group\n",requesterName);
-        sendMsg("send message in friend group",client_sock);
+
+        // get all messages from friend group
+        char allWorkMsg[550],toSend[700];
+        addConvoToFriendGroup(allWorkMsg,state);
+        sprintf(toSend,"send message in friend group|%s",allWorkMsg);
+
+        // sendMsg("send message in friend group",client_sock);
+        sendMsg(toSend,client_sock);
     }
     else if(strcmp(splitter,"message to friend group")==0){
         splitter = strtok(NULL,"|");
@@ -557,9 +570,9 @@ int main(int argc, char *argv[]){
                 FD_SET( sd , &readfds); 
         } 
     
-        // puts("before select");
+       
         select_ret=select(FD_SETSIZE,&readfds,NULL,NULL,NULL);
-        // puts("after select");
+    
 
         if ((select_ret < 0) && (errno!=EINTR))   
         {   
@@ -578,15 +591,7 @@ int main(int argc, char *argv[]){
             //inform user of socket number - used in send and receive commands  
             printf("New connection , socket fd is %d , ip is : %s , port : %d  \n" , new_socket , inet_ntoa(my_addr.sin_addr) , ntohs (my_addr.sin_port));   
            
-            //send new connection greeting message  
-
-            // if( send(new_socket, message, strlen(message), 0) != strlen(message) )   
-            // {   
-            //     perror("send");   
-            // }   
-                 
-            // puts("Welcome message sent successfully");   
-                 
+            
             //add new socket to array of sockets  
             for (i = 0; i < CLIENT_SIZE; i++)   
             {   
@@ -601,15 +606,15 @@ int main(int argc, char *argv[]){
             }   
         }
         //else its some IO operation on some other socket 
-        // puts("before loop");
+      
         for (i = 0; i < CLIENT_SIZE; i++)   
         {   
-            // puts("inside loop");
+            
             sd = client_socket[i];   
                  
             if (FD_ISSET( sd , &readfds))   
             {   
-                // puts("inside isset ");
+                
                 //Check if it was for closing , and also read the  
                 //incoming message  
                 int valread;
@@ -644,11 +649,11 @@ int main(int argc, char *argv[]){
                     //set the string terminating NULL byte on the end  
                     //of the data read  
                     buffer[valread] = '\0';   
-                    // send(sd , buffer , strlen(buffer) , 0 );
+                    
 
                     handleMsg(sd,buffer,&state);  
 
-                    // printf("buffer: %s\n",buffer);
+                   
                 }   
             }   
         }     
@@ -866,6 +871,6 @@ void logToFile(FILE *fp,char filename[],char filemethod[],char mess[]){
     fp = fopen(filename,filemethod);
     fprintf(fp,"%s",mess);
     fclose(fp);
-        // need to store messages
+        
 }
 
