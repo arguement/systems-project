@@ -16,6 +16,10 @@ int top = 0;
 int workMsg = 0;
 int friendMsg = 0;
 
+struct Logs{
+    FILE *reg_users;
+};
+
 struct Conversation{
   int user1;
   int user2;
@@ -40,7 +44,7 @@ struct State{
     struct Conversation convos[10];
     char workGroupConvos[100][70];
     char friendGroupConvos[100][70];
-    FILE* log;
+    struct Logs logs;
 
   };
 
@@ -260,6 +264,14 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
     else if (strcmp(msg,"see connected users to connect to") ==  0){
         sendMsg("you have been registered",client_sock);
+
+
+        // log to file registered_users.txt which shows all registered users
+        state->logs.reg_users = fopen("registered_users.txt","w");
+        char users[1024];
+        strcpy( users,getClientList(state,-1));
+        fprintf(state->logs.reg_users,"%s",users);
+        fclose(state->logs.reg_users);
     }
     else if(strcmp(msg,"get user list")==0){
 
@@ -473,7 +485,7 @@ int main(int argc, char *argv[]){
     int temp[30] = {};
     memcpy(state.register_users_sock_id, temp, sizeof(temp));
 
-    state.log = fopen("logs.txt","w");
+   
 
             
     sock_recv=socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);

@@ -51,9 +51,9 @@ void handleMsg(int client_sock,char msg[]){
     else if (strcmp(msg,"you have been registered")==0){
         puts("you are now registered to the system");
         // char pause[30];
-        printf("click enter to view list of all users: \n");
+        // printf("click enter to view list of all users: \n");
         
-        char c = getchar();
+        // char c = getchar();
         // while (getchar() != '\n');
 
         sendMsg("get user list",client_sock);
