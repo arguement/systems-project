@@ -42,12 +42,12 @@ struct Accepted_id{
 };
 // keeps track of all information
 struct State{
-    char register_users_names[30][25] ;
-    int register_users_sock_id[30];
-    struct Store request_messages[30];
+    char register_users_names[30][25] ; // all resgitered user names
+    int register_users_sock_id[30]; // all register users socket id
+    struct Store request_messages[30]; // store all friend request
     struct Accepted_id accepted_id[30]; // all conections that were accepted
     struct Accepted_id connection_requests[30]; // all requests sent to a client
-    struct Conversation convos[10];
+    struct Conversation convos[10]; //all conversation between users
     char workGroupConvos[100][70];
     char friendGroupConvos[100][70];
     struct Logs logs;
@@ -389,16 +389,20 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     
     else if (strcmp(splitter,"client to send messages to")==0){
         splitter = strtok(NULL,"|");
-        char toSend[50];
+        char toSend[50],name[50];
 
+        strcpy(name,splitter);
         int revieverID = getUserId(splitter,state);
 
         struct Conversation convo;
         setUserIds(client_sock,revieverID,&convo);
 
-        addConnvo(state,convo);
+        addConnvo(state,convo); // adds convo that was previously sent
 
-        sprintf(toSend,"messaging|%s",splitter);
+        char store[500];
+        getConvoMsg(client_sock,getUserId(name,state),store,state->convos);
+
+        sprintf(toSend,"messaging|%s|%s",name,store);
         sendMsg(toSend,client_sock);
     }
     else if (strcmp(splitter,"message to someone")==0){
@@ -407,8 +411,8 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         strcpy(name,splitter);
         
         getUserName(client_sock,senderName,state);
-        printf("message from %s",senderName);
-        printf("message sent to %s",name);
+        printf("message from %s\n",senderName);
+        printf("message sent to %s\n",name);
         splitter = strtok(NULL,"|");
         addConversationMsg(client_sock,getUserId(name,state),splitter,state->convos);
         printf("message: %s\n",splitter);
@@ -663,6 +667,7 @@ int main(int argc, char *argv[]){
     close(sock_recv);
 }
 
+// for testing
 void printMatchingIds(struct State *state){
     for (size_t i = 0; i < CLIENT_SIZE; i++)
     {
@@ -670,7 +675,7 @@ void printMatchingIds(struct State *state){
     }
     
 }
-
+// for test
 void printAllNames(struct State *state){
     for (size_t i = 0; i < CLIENT_SIZE; i++)
     {
@@ -742,7 +747,7 @@ void addConnvo(struct State* state,struct Conversation convo){
 
   state->convos[top] = convo;
 
-  printf("top ===== %d\n",top);
+  
 
   top++;
 }

@@ -166,8 +166,8 @@ void handleMsg(int client_sock,char msg[]){
         strcpy(senderName,splitter);
         // fscanf(stdin,"%s",msg);
         splitter = strtok(NULL,"|");
-        printf("previous meesages other client: \n%s\n",splitter);
-        puts("type 'end' to end conversation");
+        printf("previous messages other client: \n%s\n",splitter);
+        puts("\ntype 'end' to end conversation");
         printf("type msg > ");
 
         /* match up to newline */
