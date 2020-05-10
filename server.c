@@ -346,7 +346,9 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
     else if (strcmp(splitter,"accepted Request") == 0){
         splitter = strtok(NULL,"|");
-        printf("accepted request name: %s$\n",splitter);
+
+        printf("accepted request name: %s\n",splitter);
+
         int userid = getUserId(splitter,state);
         // printf("userid === %d and clientSock == %d",userid,client_sock);
         storeAcceptedFriendRequest(userid,client_sock,state);
@@ -552,12 +554,14 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
+    printf("waiting on client connection...\n");
     //try to specify maximum of 3 pending connections for the master socket  
     if (listen(sock_recv, 5) < 0)   
     {   
         perror("listen");   
         exit(EXIT_FAILURE);   
     }   
+       
        
         /* listen ... */
     while (1){

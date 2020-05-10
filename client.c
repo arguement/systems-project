@@ -83,7 +83,7 @@ void handleMsg(int client_sock,char msg[]){
 
     } */
     else if (strcmp(splitter,"request message send") == 0 || strcmp(msg,"menu")==0 ){
-        
+        sleep(1);
         puts("this is the menu");
         puts("1 ----- see friend requests");
         puts("2 ----- see all accepted friends");
@@ -197,9 +197,9 @@ void handleMsg(int client_sock,char msg[]){
         printf("type msg (work group) > ");
         char msg[30],toSend[50];
 
-        // fgets(msg,sizeof(msg),stdin);
-        input(msg,sizeof(msg)); // -- here
-        if (strcmp(msg,"end") == 0){
+        fgets(msg,sizeof(msg),stdin);
+        // input(msg,sizeof(msg)); // -- here
+        if (strcmp(msg,"end\n") == 0){
             printf("...............ending message\n");
             sendMsg("menu",client_sock);
             return;
@@ -219,9 +219,9 @@ void handleMsg(int client_sock,char msg[]){
         printf("type msg (friend group) > ");
         char msg[30],toSend[50];
 
-        // fgets(msg,sizeof(msg),stdin);
-        input(msg,sizeof(msg)); // -- here
-        if (strcmp(msg,"end") == 0){
+        fgets(msg,sizeof(msg),stdin);
+        // input(msg,sizeof(msg)); // -- here
+        if (strcmp(msg,"end\n") == 0){
             printf("...............ending message\n");
             sendMsg("menu",client_sock);
             return;
