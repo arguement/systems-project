@@ -94,18 +94,19 @@ void handleMsg(int client_sock,char msg[]){
 
         puts("");
         puts("");
-        puts("1 ----- See friend requests");
+        puts("1 ----- See connected users and make connection request (other users need to be registered first)");
         puts("");
-        puts("2 ----- See all accepted friends");
+        puts("2 ----- See friend requests");
         puts("");
-        puts("3 ----- Select and message a friend (after connection request accepted)");
+        puts("3 ----- See all accepted friends");
         puts("");
-        puts("4 ----- Join work group");
+        puts("4 ----- Select and message a friend (after connection request accepted)");
         puts("");
-        puts("5 ----- Join friend group");
+        puts("5 ----- Join work group");
         puts("");
-        puts("6 ----- See connected users and make connection request (other users need to be registered first)");
+        puts("6 ----- Join friend group");
         puts("");
+        
 
         printf("select option > ");
         int response;
@@ -118,22 +119,22 @@ void handleMsg(int client_sock,char msg[]){
         switch (response)
         {
         case 1:
-            sendMsg("see friend requests",client_sock);
+            sendMsg("see connected users to connect to",client_sock);
             break;
         case 2:
-            sendMsg("see all accepted friends",client_sock);
+            sendMsg("see friend requests",client_sock);
             break;
         case 3:
-            sendMsg("select and message a friend",client_sock);
+            sendMsg("see all accepted friends",client_sock);
             break;
         case 4:
-            sendMsg("register for work group",client_sock);
+            sendMsg("select and message a friend",client_sock);
             break;
         case 5:
-            sendMsg("register for friend group",client_sock);
+            sendMsg("register for work group",client_sock);
             break;
         case 6:
-            sendMsg("see connected users to connect to",client_sock);
+            sendMsg("register for friend group",client_sock);
             break;
         default:
             break;
@@ -209,7 +210,7 @@ void handleMsg(int client_sock,char msg[]){
         splitter = strtok(NULL,"|");
 
         printf("previous meesages: \n%s\n",splitter);
-        
+        puts("\ntype 'end' to end conversation");
         printf("type msg (work group) > ");
         char msg[30],toSend[50];
 
@@ -231,7 +232,7 @@ void handleMsg(int client_sock,char msg[]){
         splitter = strtok(NULL,"|");
 
         printf("previous meesages: \n%s\n",splitter);
-        
+        puts("\ntype 'end' to end conversation");
         printf("type msg (friend group) > ");
         char msg[30],toSend[50];
 
@@ -284,26 +285,19 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    // char initial[] = "regsiter";
-    // send_len=strlen(text);
-    // strcpy(buf,initial);
-
-    // send(sock_send,buf,send_len,0);
+    
     sendMsg("register",sock_send);
 
     while(1){
-        // printf("Send? ");
-        // scanf("%s",text);
-        // puts("before revieve");
+       
         int valread = read( sock_send, buf, BUF_SIZE);
         buf[valread] = '\0'; 
         if (strcmp(text,"quit") == 0)
             break;
 
-        // strcpy(buf,text);
-        // send_len=strlen(text);
+        
         handleMsg(sock_send,buf);
-        // bytes_sent=send(sock_send,buf,send_len,0);
+        
         }
 
     close(sock_send);
