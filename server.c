@@ -269,7 +269,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         int send_len;
         sendMsg("request acknowledged",client_sock);
     }
-    
+
     else if(strcmp(splitter,"register-data") == 0){
         splitter = strtok(NULL,"|");
         printf("%s is now registered in the system\n",splitter);
@@ -277,7 +277,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         // logs to the file about all persons who registered to the system
         char logger[60];
         sprintf(logger,"%s is now registered in the system\n",splitter);
-        state->logs.all_available_friends = fopen("all_available_friend","a");
+        state->logs.all_available_friends = fopen("all_available_friend.txt","a");
         fprintf(state->logs.all_available_friends,"%s",logger);
         fclose(state->logs.all_available_friends);
 
@@ -396,6 +396,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
     
     else if (strcmp(splitter,"client to send messages to")==0){
+        
         splitter = strtok(NULL,"|");
         char toSend[50],name[50];
 
@@ -409,7 +410,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
 
         char store[500];
         getConvoMsg(client_sock,getUserId(name,state),store,state->convos);
-
+        
         sprintf(toSend,"messaging|%s|%s",name,store);
         sendMsg(toSend,client_sock);
     }
@@ -504,6 +505,12 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         sprintf(toSend,"send message in friend group|%s",allWorkMsg);
         sendMsg(toSend,client_sock);
     }
+    else if (strcmp(msg,"exit")==0){
+        char name[50];
+        getUserName(client_sock,name,state);
+        printf("%s is exiting....\n",name);
+        sendMsg("exit",client_sock);
+    }
     
     
 
@@ -560,7 +567,7 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    printf("waiting on client connection...\n");
+    printf("waiting on client connections...\n");
     //try to specify maximum of 3 pending connections for the master socket  
     if (listen(sock_recv, 5) < 0)   
     {   

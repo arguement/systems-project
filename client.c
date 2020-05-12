@@ -29,7 +29,7 @@ void input(char str[],int size);
 
 void handleMsg(int client_sock,char msg[]){
 
-    // puts("handle msg");
+    // puts(msg); // to remove
     char *splitter = strtok(msg,"|");
     if (strcmp(msg,"request acknowledged")==0){
         puts("enter your registration info...");
@@ -76,8 +76,10 @@ void handleMsg(int client_sock,char msg[]){
         strcat(toSend,name);
 
         sendMsg(toSend,client_sock);
+        puts("");
         printf("resquest to user %s sent\n",name);
-        printf("accept request in other client by clicking option 1...");
+        printf("accept request in other client by clicking option 2...");
+        puts("");
 
 
     }
@@ -105,6 +107,8 @@ void handleMsg(int client_sock,char msg[]){
         puts("5 ----- Join work group");
         puts("");
         puts("6 ----- Join friend group");
+        puts("");
+        puts("7 ----- Exit");
         puts("");
         
 
@@ -136,6 +140,9 @@ void handleMsg(int client_sock,char msg[]){
         case 6:
             sendMsg("register for friend group",client_sock);
             break;
+        case 7:
+            sendMsg("exit",client_sock);
+            break;
         default:
             break;
         }
@@ -152,7 +159,8 @@ void handleMsg(int client_sock,char msg[]){
         input(name,sizeof(name)); // -- here
         sprintf(toSend,"accepted Request|%s",name);
         sendMsg(toSend,client_sock);
-        printf("you can now connect to a a friend\n");
+        printf("you can now connect to that friend in option 4\n");
+        
     }
     else if(strcmp(splitter,"list of accepted friends") == 0){
         splitter = strtok(NULL,"|");
@@ -177,13 +185,21 @@ void handleMsg(int client_sock,char msg[]){
         sendMsg(toSend,client_sock);
     }
     else if (/*sending messages*/strcmp(splitter,"messaging")==0){
+        
         splitter = strtok(NULL,"|");
         
         char msg[30],senderName[50],toSend[50];
         strcpy(senderName,splitter);
         // fscanf(stdin,"%s",msg);
         splitter = strtok(NULL,"|");
-        printf("previous messages other client: \n%s\n",splitter);
+
+        
+        /* if (splitter != NULL){
+            printf("respondant recieved your messages\n");
+            sleep(1);
+        }  */
+
+        printf("previous messages other user: \n%s\n",splitter);
         puts("\ntype 'end' to end conversation");
         printf("type msg > ");
 
@@ -292,8 +308,11 @@ int main(int argc, char *argv[]){
        
         int valread = read( sock_send, buf, BUF_SIZE);
         buf[valread] = '\0'; 
-        if (strcmp(text,"quit") == 0)
+        if (strcmp(buf,"exit") == 0){
+
+            puts("exiting client......");
             break;
+        }
 
         
         handleMsg(sock_send,buf);

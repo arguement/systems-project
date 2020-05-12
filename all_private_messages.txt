@@ -1,58 +1,10 @@
-from: jj
-to: mm
-message: hello
-from: mm
-to: jj
-message: blah
-from: john
-to: jordan
-message: jordan
-
-from: john
-to: jordan
-message: jason
-
-from: john
-to: jordan
-message: williams
-
-from: jordan
-to: jason
-message: hello
+from: Jordan
+to: John
+message: hey
 
 
-from: jordan
-to: jason
-message: there
-
-
-from: jack
-to: jordan
-message: hello
-
-
-from: jordan
-to: jack
-message: blah
-
-
-from: jack
-to: jordan
-message: oh
-
-
-from: jordan
-to: jack
-message: some
-
-
-from: jack
-to: jordan
-message: here
-
-
-from: Jack
-to: Jordan
-message: hello
+from: Jordan
+to: John
+message: its me
 
 
