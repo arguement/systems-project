@@ -1,3 +1,7 @@
+// Jordan Williams 620108502
+// Malik Curriah 620108120
+// Andryck Rodgers 620118382
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -49,7 +53,7 @@ void handleMsg(int client_sock,char msg[]){
         sendMsg("menu",client_sock);
     }
     else if (strcmp(msg,"you have been registered")==0){
-        puts("you are now registered to the system");
+        // puts("you are now registered to the system");
         // char pause[30];
         // printf("click enter to view list of all users: \n");
         
@@ -84,14 +88,26 @@ void handleMsg(int client_sock,char msg[]){
     } */
     else if (strcmp(splitter,"request message send") == 0 || strcmp(msg,"menu")==0 ){
         sleep(1);
-        puts("this is the menu");
-        puts("1 ----- see friend requests");
-        puts("2 ----- see all accepted friends");
-        puts("3 ----- select and message a friend (after connection request accepted)");
-        puts("4 ----- join work group");
-        puts("5 ----- join friend group");
-        puts("6 ----- see connected users to connect to (other users need to be registered first)");
+        puts("");
+        puts("Main Menu");
+        puts("---------");
 
+        puts("");
+        puts("");
+        puts("1 ----- See friend requests");
+        puts("");
+        puts("2 ----- See all accepted friends");
+        puts("");
+        puts("3 ----- Select and message a friend (after connection request accepted)");
+        puts("");
+        puts("4 ----- Join work group");
+        puts("");
+        puts("5 ----- Join friend group");
+        puts("");
+        puts("6 ----- See connected users and make connection request (other users need to be registered first)");
+        puts("");
+
+        printf("select option > ");
         int response;
         char temp[100];
         // scanf("%d",&response);

@@ -1,3 +1,9 @@
+// Jordan Williams 620108502
+// Malik Curriah 620108120
+// Andryck Rodgers 620118382
+
+
+
 #include <stdio.h>
 #include <sys/types.h>	/* system type defintions */
 #include <sys/socket.h>	/* network system functions */
