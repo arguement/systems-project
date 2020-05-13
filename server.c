@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #define BUF_SIZE	1024
 #define LISTEN_PORT	60000
@@ -57,8 +58,16 @@ struct State{
     char workGroupConvos[100][70];
     char friendGroupConvos[100][70];
     struct Logs logs;
+    char work_group_names[30][25];
+    char friend_group_names[30][25];
 
   };
+bool checkFriendName(int sock,struct State *state);
+bool checkWorkName(int sock,struct State *state);
+void addWorkName(char name[],int sock,struct State *state);  
+void addFriendName(char name[],int sock,struct State *state);
+void getWorkName(int id,char name[],struct State *state);
+void getFriendName(int id,char name[],struct State *state);
 
 void logToFile(FILE *fp,char filename[],char filemethod[],char mess[]); // append content to file
 
@@ -438,9 +447,25 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         sprintf(toSend,"messaging|%s|%s",name,store);
         sendMsg(toSend,client_sock);
     }
+    else if (strcmp(msg,"work") == 0){
+        
+        if ( checkWorkName(client_sock,state) == false){
+            sendMsg("join work group",client_sock);
+            return;
+        }
+        sendMsg("work group registering",client_sock);
+    }
+    else if(strcmp(splitter,"work group registration") == 0 ){
+        splitter = strtok(NULL,"|");
+        puts("work group registration");
+         
+        addWorkName(splitter,client_sock,state);
+        sendMsg("join work group",client_sock);
+    }
     else if(strcmp(msg,"register for work group")==0){
         char requesterName[50];
-        getUserName(client_sock,requesterName,state);
+        getWorkName(client_sock,requesterName,state);
+        // getUserName(client_sock,requesterName,state);
         printf("registering for work group\n");
         printf("%s now registered in the group\n",requesterName);
 
@@ -451,12 +476,13 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         // sendMsg("send message in work group",client_sock);
         sendMsg(toSend,client_sock);
     }
+    
     else if(strcmp(splitter,"message to work group")==0){
         splitter = strtok(NULL,"|");
         char message[100];
         char senderName[30];
         char toSend[700];
-        getUserName(client_sock,senderName,state);
+        getWorkName(client_sock,senderName,state);
 
         sprintf(message,"fr %s:- %s\n",senderName,splitter);
         puts(message);
@@ -471,11 +497,25 @@ void handleMsg(int client_sock,char msg[], struct State *state){
     }
 
 
-
+    else if (strcmp(msg,"friend") == 0){
+        
+        if ( checkFriendName(client_sock,state) == false){
+            sendMsg("join friend group",client_sock);
+            return;
+        }
+        sendMsg("friend group registering",client_sock);
+    }
+    else if(strcmp(splitter,"friend group registration") == 0 ){
+        splitter = strtok(NULL,"|");
+        puts("friend group registration");
+         
+        addFriendName(splitter,client_sock,state);
+        sendMsg("join friend group",client_sock);
+    }
 
     else if(strcmp(msg,"register for friend group")==0){
         char requesterName[50];
-        getUserName(client_sock,requesterName,state);
+        getFriendName(client_sock,requesterName,state);
         printf("registering for friend group\n");
         printf("%s now registered in the group\n",requesterName);
 
@@ -492,7 +532,7 @@ void handleMsg(int client_sock,char msg[], struct State *state){
         char message[100];
         char senderName[30];
         char toSend[700];
-        getUserName(client_sock,senderName,state);
+       getFriendName(client_sock,senderName,state);
 
         sprintf(message,"fr %s:- %s\n",senderName,splitter);
         puts(message);
@@ -538,7 +578,13 @@ int main(int argc, char *argv[]){
     // turns all sockets id's in staet to 0
     int temp[30] = {};
     memcpy(state.register_users_sock_id, temp, sizeof(temp));
-
+    
+    for (size_t i = 0; i < CLIENT_SIZE; i++)
+    {
+        strcpy(state.work_group_names[i],"");
+        strcpy(state.friend_group_names[i],"");
+    }
+    
    
 
             
@@ -896,3 +942,119 @@ void logToFile(FILE *fp,char filename[],char filemethod[],char mess[]){
         
 }
 
+void addWorkName(char name[],int sock,struct State *state){
+
+    
+
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == sock)
+        {
+            
+            strcpy(state->work_group_names[i],name);
+            break;
+        }
+        
+    }
+    
+
+
+
+}
+bool checkWorkName(int sock,struct State *state){
+
+    
+
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == sock)
+        {
+            
+            if (strcmp(state->work_group_names[i],"") == 0){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        
+    }
+    return false;
+
+}
+
+bool checkFriendName(int sock,struct State *state){
+
+    
+
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == sock)
+        {
+            
+            if (strcmp(state->friend_group_names[i],"") == 0){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        
+    }
+    return false;
+
+}
+
+
+void addFriendName(char name[],int sock,struct State *state){
+
+    
+
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == sock)
+        {
+            
+            strcpy(state->friend_group_names[i],name);
+            break;
+        }
+        
+    }
+    
+
+
+
+}
+
+void getWorkName(int id,char name[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == id)
+        {
+            
+            strcpy(name,state->work_group_names[i]);
+            break;
+        }
+        
+    }
+    
+}
+void getFriendName(int id,char name[],struct State *state){
+
+    for (size_t i = 0; i < 30; i++)
+    {
+        if (state->register_users_sock_id[i] == id)
+        {
+            
+            strcpy(name,state->friend_group_names[i]);
+            break;
+        }
+        
+    }
+    
+}

@@ -135,10 +135,10 @@ void handleMsg(int client_sock,char msg[]){
             sendMsg("select and message a friend",client_sock);
             break;
         case 5:
-            sendMsg("register for work group",client_sock);
+            sendMsg("work",client_sock);
             break;
         case 6:
-            sendMsg("register for friend group",client_sock);
+            sendMsg("friend",client_sock);
             break;
         case 7:
             sendMsg("exit",client_sock);
@@ -218,6 +218,16 @@ void handleMsg(int client_sock,char msg[]){
         sendMsg(toSend,client_sock);
         printf("\n");
     }
+    else if (strcmp(msg,"work group registering") == 0){
+        char name[50],toSend[100];
+        printf("enter your name for the work group: ");
+        input(name,sizeof(name));
+        sprintf(toSend,"work group registration|%s",name);
+        sendMsg(toSend,client_sock);
+    }
+    else if (strcmp(msg,"join work group")==0){
+        sendMsg("register for work group",client_sock);
+    }
     else if (strcmp(splitter,"send message in work group")==0){
         splitter = strtok(NULL,"|");
 
@@ -239,6 +249,16 @@ void handleMsg(int client_sock,char msg[]){
         
         sendMsg(toSend,client_sock);
 
+    }
+    else if (strcmp(msg,"friend group registering") == 0){
+        char name[50],toSend[100];
+        printf("enter your name for the friend group: ");
+        input(name,sizeof(name));
+        sprintf(toSend,"friend group registration|%s",name);
+        sendMsg(toSend,client_sock);
+    }
+    else if (strcmp(msg,"join friend group")==0){
+        sendMsg("register for friend group",client_sock);
     }
     else if (strcmp(splitter,"send message in friend group")==0){
         splitter = strtok(NULL,"|");
