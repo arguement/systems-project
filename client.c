@@ -203,11 +203,7 @@ void handleMsg(int client_sock,char msg[]){
         puts("\ntype 'end' to end conversation");
         printf("type msg > ");
 
-        /* match up to newline */
-        // scanf("%*[^\n]"); 
-        // /* discard the newline */
-        // scanf("%*c"); 
-
+        
         fgets(msg,sizeof(msg),stdin);
         if (strcmp(msg,"end\n") == 0){
             printf("...............ending message\n");
